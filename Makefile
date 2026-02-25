@@ -38,7 +38,8 @@ build/debug/%.o: src/%.c
 
 # release build
 release: $(OBJS_RELEASE)
-	$(CC) $^ -o $(RELEASE_TARGET) $(LDFLAGS) $(CFLAGS_RELEASE)
+	$(CC) $^ -o $(RELEASE_TARGET) $(LDFLAGS)  $(CFLAGS_RELEASE)
+
 
 build/release/%.o: src/%.c
 	@mkdir -p $(dir $@)

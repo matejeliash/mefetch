@@ -30,7 +30,7 @@ void print_user_info(){
 
 }
 void print_title(char* title){
-    printf("%s%s%s:",COLOR_GREEN,title,COLOR_RESET);
+    printf("%s%-15s%s: ",COLOR_GREEN,title,COLOR_RESET);
 
 }
 void print_desktop_info(){
@@ -76,7 +76,7 @@ void print_package_count(OsInfo* info){
         strcpy(pkg_type,"dpkg");
     }
     else if( (strcmp(info->id,"fedora") == 0 )|| (strstr(info->id_like,"fedora")!= NULL) ){
-        count = get_package_count_fedora();
+        count = get_package_count_rpm();
         strcpy(pkg_type,"rpm");
     }
     print_title("Packages");
@@ -172,6 +172,45 @@ void print_uptime(){
     rest = rest %60;
     print_title("Uptime");
     printf("%d days  %02d:%02d:%02d\n",days,hours,mins,rest);
+
+
+    // printf("%ld MiB\n",sinfo.totalram * sinfo.mem_unit / 1024 / 1024);
+    // printf("%ld MiB\n",sinfo.freeram * sinfo.mem_unit / 1024 / 1024);
+    // printf("%ld MiB\n",(sinfo.bufferram + sinfo.freeram) * sinfo.mem_unit / 1024 / 1024);
+
+
+}
+
+void print_mem_used(){
+
+    MemInfo mem_info= get_mem_info();
+    print_title("Memory used");
+
+    long usedMB = (mem_info.total - mem_info.available) / 1024;
+    long totalMB = mem_info.total / 1024;
+
+    printf("%ld/%ld MB\n",usedMB,totalMB);
+
+}
+
+
+void print_net_info(){
+
+    NetInfo net_info=get_net_info();
+    //printf("%d interfaces",net_info.count);
+
+    for(int i =0;i<net_info.count;i++){
+        print_title("Local IP");
+        printf("%s (interface: %s)\n",net_info.interfaces[i].ip,net_info.interfaces[i].name);
+
+    }
+
+    for(int i =0;i<net_info.count;i++){
+        free(net_info.interfaces[i].ip);
+        free(net_info.interfaces[i].name);
+    }
+
+    free(net_info.interfaces);
 
 
 }

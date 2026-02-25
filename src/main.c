@@ -33,20 +33,16 @@ int main(){
     print_locale();
     print_shell();
     print_uptime();
+    print_mem_used();
+    print_net_info();
+    printf("\n");
     print_colors();
     printf("\n\n");
 
-    //printf("%s hello",COLOR_GREEN);
-
-    
-    // printf("%ld MiB\n",sinfo.totalram * sinfo.mem_unit / 1024 / 1024);
-    // printf("%ld MiB\n",sinfo.freeram * sinfo.mem_unit / 1024 / 1024);
-    // printf("%ld MiB\n",(sinfo.bufferram + sinfo.freeram) * sinfo.mem_unit / 1024 / 1024);
 
 
-    // FILE* file = fopen("/proc/meminfo","r");
 
-
+   // get_mem_info();
 
 
 

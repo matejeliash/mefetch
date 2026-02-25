@@ -79,3 +79,12 @@ int get_package_count_fedora() {
     sqlite3_close(db);
     return count;
 }
+
+
+
+int  get_package_count_rpm(){
+
+    char* cmd[] = { "rpm", "-qa", "--nosignature", "--nodigest", "--qf", "'%{NAME}\n'", NULL};
+    int count = run_cmd_line_counter(cmd);
+    return count;
+}

@@ -29,4 +29,10 @@ void print_kernel();
 
 void print_uptime();
 
+
+void print_mem_used();
+
+
+void print_net_info();
+
 #endif

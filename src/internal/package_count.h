@@ -7,6 +7,9 @@ int get_package_count_fedora();
 
 int get_package_count_arch();
 
+int  get_package_count_rpm();
+
 void print_package_info();
+
 
 #endif

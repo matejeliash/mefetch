@@ -4,6 +4,12 @@
 #include "cmd_runner.h"
 #include <stdio.h>
 
+
+#include <ifaddrs.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/types.h>
+
 #include "sys_info.h"
 
 char* os_release_get_value(char* line, char* prefix){
@@ -94,6 +100,7 @@ CpuInfo* get_cpu_info(){
 
     char* cmd_argv[] ={"lscpu",NULL};
 
+
     char* stdout =run_cmd(cmd_argv);
     char* line = strtok(stdout, "\n");
 
@@ -126,11 +133,124 @@ CpuInfo* get_cpu_info(){
 
 
 
+long mem_line_get_long(char* line){
+
+    const char *p = strchr(line,':');
+    if(!p) return -1;
+    p++;
+
+    while(*p == ' ' || *p == '\t') p++;
+
+    return strtol(p,NULL,10);
+
+
+}
+
+
+MemInfo get_mem_info(){
+
+    FILE* file = fopen("/proc/meminfo","r");
+
+    char line [500];
+
+    MemInfo info;
+    info.total = -1;
+    info.available = -1;
+
+    while(fgets(line,sizeof(line),file)){
+        if(has_prefix(line,"MemTotal:")){
+            info.total = mem_line_get_long(line);
+        }
+        if(has_prefix(line,"MemAvailable:")){
+            info.available =  mem_line_get_long(line);
+        }
+    }
+
+    return info;
+
 
     
-    // printf("%ld MiB\n",sinfo.totalram * sinfo.mem_unit / 1024 / 1024);
-    // printf("%ld MiB\n",sinfo.freeram * sinfo.mem_unit / 1024 / 1024);
-    // printf("%ld MiB\n",(sinfo.bufferram + sinfo.freeram) * sinfo.mem_unit / 1024 / 1024);
+}
+
+
+NetInfo get_net_info(){
+
+    NetInfo info;
+    info.count = 0;
+    info.interfaces=  NULL;
+
+
+    struct ifaddrs *if_arr, *if_cur; // list of interface and cur for iterating
+    char ip[INET_ADDRSTRLEN]; // store ipv4 address
+
+    if (getifaddrs(&if_arr) == -1) {
+        return info;
+    }
+
+    int count = 0;
+    
+    for (if_cur = if_arr; if_cur != NULL; if_cur = if_cur->ifa_next) {
+        if (!if_cur->ifa_addr)
+            continue;
+
+        // Check for IPv4 addresses only
+        if (if_cur->ifa_addr->sa_family == AF_INET) {
+            struct sockaddr_in *sa = (struct sockaddr_in *)if_cur->ifa_addr;
+            
+            // convert to string e.g. 192.160.0.1
+            inet_ntop(AF_INET, &(sa->sin_addr), ip, INET_ADDRSTRLEN);
+
+            // Skip localhost
+            if (strcmp(ip, "127.0.0.1") != 0) {
+                //printf("%s: %s\n", if_cur->ifa_name, ip);
+                count++;
+            }
+        }
+    }
+
+    //printf("%d\n",count);
+    info.count = count;
+
+
+    if (count ==0){
+        freeifaddrs(if_arr);
+        return info;
+
+    }
+
+    info.interfaces = malloc(count * sizeof(NetInterface));
+
+    int pos=0;
+
+    for (if_cur = if_arr; if_cur != NULL; if_cur = if_cur->ifa_next) {
+        if (!if_cur->ifa_addr)
+            continue;
+
+        // Check for IPv4 addresses only
+        if (if_cur->ifa_addr->sa_family == AF_INET) {
+            struct sockaddr_in *sa = (struct sockaddr_in *)if_cur->ifa_addr;
+            
+            // convert to string e.g. 192.160.0.1
+            inet_ntop(AF_INET, &(sa->sin_addr), ip, INET_ADDRSTRLEN);
+
+            // Skip localhost
+            if (strcmp(ip, "127.0.0.1") != 0) {
+                info.interfaces[pos].name = strdup(if_cur->ifa_name);
+                info.interfaces[pos].ip = strdup(ip);
+                pos++;
+            }
+        }
+
+
+
+    }
+
+    freeifaddrs(if_arr);
+    return info;
+}
+
+
+    
 
 
     // FILE* file = fopen("/proc/meminfo","r");

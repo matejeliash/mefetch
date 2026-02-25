@@ -18,15 +18,31 @@ typedef struct OsInfo{
 }OsInfo;
 
 
+typedef struct MemInfo{
+    long total;
+    long available;
+}MemInfo;
+
+typedef struct NetInterface{
+    char* name;
+    char* ip;
+
+}NetInterface;
+
+typedef struct NetInfo{
+    NetInterface* interfaces;
+    int count;
+}NetInfo;
+
+
 OsInfo* get_os_info();
 
 CpuInfo* get_cpu_info();
 
-// typedef struct MemInfo{
-//     char* avail_mem;
-//     char*  total_mem;
-// } MemInfo;
-//
-//
+
+MemInfo get_mem_info();
+
+
+NetInfo get_net_info();
 
 #endif
