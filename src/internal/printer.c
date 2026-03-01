@@ -11,8 +11,8 @@
 #include <sys/utsname.h>
 #include <sys/sysinfo.h>
 
+char SELECTED_COLOR[64] = COLOR_GREEN;
 
-// 
 void print_user_info(){
     // get hostname
     char hostname[100];
@@ -26,11 +26,19 @@ void print_user_info(){
     if(!pw){
         return;
     }
-    printf("%s%s%s@%s%s%s\n",COLOR_GREEN,pw->pw_name,COLOR_RESET,COLOR_GREEN,hostname,COLOR_RESET);
+    printf("%s%s%s@%s%s%s\n",SELECTED_COLOR,pw->pw_name,COLOR_RESET,SELECTED_COLOR,hostname,COLOR_RESET);
+
+    int width = strlen(pw->pw_name) + 1 + strlen(hostname);
+
+    for(int i=0;i<width;i++){
+        printf("-");
+    }
+    printf("\n");
+
 
 }
 void print_title(char* title){
-    printf("%s%-15s%s: ",COLOR_GREEN,title,COLOR_RESET);
+    printf("%s%-15s%s: ",SELECTED_COLOR,title,COLOR_RESET);
 
 }
 void print_desktop_info(){
@@ -49,6 +57,10 @@ void print_desktop_info(){
 void print_cpu_info(){
 
     CpuInfo *cpu_info = get_cpu_info();
+
+    if (!cpu_info ){
+        return;
+    }
     print_title("CPU");
     printf("%s %s (%s cores)\n",
         cpu_info->model_name,
@@ -79,8 +91,20 @@ void print_package_count(OsInfo* info){
         count = get_package_count_rpm();
         strcpy(pkg_type,"rpm");
     }
+    else if( (strcmp(info->id,"arch") == 0 )|| (strstr(info->id_like,"arch")!= NULL) ){
+        count = get_package_count_arch();
+        strcpy(pkg_type,"pacman");
+
+    }
+
     print_title("Packages");
-    printf("%d (%s)\n",count,pkg_type);
+    if (count == -1){
+        printf("unknown (%s)\n",pkg_type);
+    }else{
+        printf("%d (%s)\n",count,pkg_type);
+
+    }
+
 
 }
 

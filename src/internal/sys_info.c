@@ -9,9 +9,11 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 
 #include "sys_info.h"
 
+// parse line from /ets/os-release  so we get value from key value pair
 char* os_release_get_value(char* line, char* prefix){
     char* value = line + strlen(prefix);
 
@@ -93,6 +95,14 @@ OsInfo* get_os_info(){
 
 
 CpuInfo* get_cpu_info(){
+
+    struct stat st;
+
+    if (stat("/bin/lscpu",&st) == -1){
+        return NULL;
+    }
+
+
     CpuInfo *info = malloc(sizeof(CpuInfo));
 
     //  we could also  read from file /proc/cpuinfo but data are strange on ARM
@@ -104,27 +114,35 @@ CpuInfo* get_cpu_info(){
     char* stdout =run_cmd(cmd_argv);
     char* line = strtok(stdout, "\n");
 
+    if (strlen(stdout) == 0){
+        info->model_name = strdup("unknown");
+        info->architecture = strdup("unknown");
+        info->cpu_count = strdup("unknown");
+        return info;
+    }
+
     while(line !=NULL){
         if (has_prefix(line, "Architecture:") ){
             char *colon = strchr(line,':');
             colon++;
             char* trimmed =trim(colon);
-            info-> architecture = trimmed;
+            info->architecture = trimmed;
         }else if (has_prefix(line, "CPU(s):")){
             char *colon = strchr(line,':');
             colon++;
             char* trimmed =trim(colon);
-            info -> cpu_count = trimmed;
+            info->cpu_count = trimmed;
         }else if (strstr(line,"Model name:")!=NULL ){
 
             char *colon = strchr(line,':');
             colon++;
             char* trimmed =trim(colon);
-            info -> model_name = trimmed;
+            info->model_name = trimmed;
 
         }
          line = strtok(NULL, "\n");
     }
+
     free(stdout);
 
     return info;
@@ -132,7 +150,8 @@ CpuInfo* get_cpu_info(){
 }
 
 
-
+// extract long value from /proc/meminfo
+// e.g line -> <Type>: <value>
 long mem_line_get_long(char* line){
 
     const char *p = strchr(line,':');
@@ -240,8 +259,6 @@ NetInfo get_net_info(){
                 pos++;
             }
         }
-
-
 
     }
 

@@ -13,8 +13,8 @@ This is a Neofetch-like terminal application written in C. I know a Neofetch-lik
 
 ## TODO
 - [x] Show kernel
-- [ ] Show current IP address
-- [ ] Show used memory
+- [x] Show current IP address
+- [x] Show used memory
 - [ ] Show used disk space
 - [ ] Show graphics card
   

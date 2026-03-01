@@ -14,9 +14,46 @@
 #include "internal/printer.h"
 #include "internal/sys_info.h"
 
+extern char SELECTED_COLOR[64];
+
+void set_color(int argc,char* argv[]){
+
+    for(int i=1;i<argc;i++){
+        if(strcmp(argv[i],"--black") == 0){
+            strcpy(SELECTED_COLOR,"\033[0;30m");
+        }
+        else if(strcmp(argv[i],"--red") == 0){
+            strcpy(SELECTED_COLOR,"\033[0;31m");
+        }
+        else if(strcmp(argv[i],"--green") == 0){
+            strcpy(SELECTED_COLOR,"\033[0;32m");
+        }
+        else if(strcmp(argv[i],"--yellow") == 0){
+            strcpy(SELECTED_COLOR,"\033[0;33m");
+        }
+        else if(strcmp(argv[i],"--blue") == 0){
+            strcpy(SELECTED_COLOR,"\033[0;34m");
+        }
+        else if(strcmp(argv[i],"--purple") == 0){
+            strcpy(SELECTED_COLOR,"\033[0;35m");
+        }
+        else{
+            printf("`%s` is unknown color, exiting program\n",argv[i]);
+            exit(1);
+        }
+
+    }
+
+}
 
 
-int main(){
+
+
+int main(int argc,char* argv[]){
+
+    //strcpy(SELECTED_COLOR,"\033[0;33m");
+
+    set_color(argc,argv);
 
     printf("\n\n");
     print_user_info();
@@ -38,6 +75,11 @@ int main(){
     printf("\n");
     print_colors();
     printf("\n\n");
+
+    // char* cmd_args[] = {"asdasd","asdasd",NULL};
+    // char* stdout = run_cmd(cmd_args);
+    // printf("%s\n",stdout);
+    // free(stdout);
 
 
 

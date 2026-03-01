@@ -2,10 +2,13 @@
 #define PRINTER_H
 
 // color codes in ANSI for color prinrting
-#define COLOR_GREEN "\033[0;32m"
+#define COLOR_GREEN "\033[0;36m"
 //#define COLOR_BLUE  "\033[0;34m"  // blue was incorrectly green
 
 #define COLOR_RESET "\033[0m"
+
+extern char SELECTED_COLOR[64];
+
 
 #include "sys_info.h"
 
