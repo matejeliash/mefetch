@@ -10,6 +10,7 @@
 #include "printer.h"
 #include <sys/utsname.h>
 #include <sys/sysinfo.h>
+#include <sys/stat.h>
 
 char SELECTED_COLOR[64] = COLOR_GREEN;
 
@@ -77,25 +78,13 @@ void print_cpu_info(){
 
 // later change to switch and probably move to package_count.c
 
+
 void print_package_count(OsInfo* info){
 
     int count = -1;
     char pkg_type [10];
-    strcpy(pkg_type,"unknown");
-    // printf("packages: %d\n",count);
-    if( (strcmp(info->id,"debian") == 0 )|| (strstr(info->id_like,"debian") !=NULL) ){
-        count = get_package_count_deb( );
-        strcpy(pkg_type,"dpkg");
-    }
-    else if( (strcmp(info->id,"fedora") == 0 )|| (strstr(info->id_like,"fedora")!= NULL) ){
-        count = get_package_count_rpm();
-        strcpy(pkg_type,"rpm");
-    }
-    else if( (strcmp(info->id,"arch") == 0 )|| (strstr(info->id_like,"arch")!= NULL) ){
-        count = get_package_count_arch();
-        strcpy(pkg_type,"pacman");
 
-    }
+    get_package_count(info,pkg_type,&count);
 
     print_title("Packages");
     if (count == -1){
@@ -111,16 +100,17 @@ void print_package_count(OsInfo* info){
 
 void print_locale(){
 
-    setlocale(LC_ALL, "");   // init from env
-    char *locale=setlocale(LC_ALL,NULL); // do not change just get current
+     setlocale(LC_ALL, "");   // init from env
+     char *locale=setlocale(LC_CTYPE,NULL); // do not change just get current
+    //char * locale = getenv("LANG");
     if (locale){
         print_title("Locale");
         printf("%s\n",locale);
-    }else{
-        print_title("Locale");
-        printf("%s\n","unknown");
-
     }
+    // else{
+    //     print_title("Locale");
+    //     printf("%s\n","unknown");
+    // }
 }
 
 
@@ -208,12 +198,17 @@ void print_uptime(){
 void print_mem_used(){
 
     MemInfo mem_info= get_mem_info();
+
+    double usedMB = (mem_info.mem_total - mem_info.mem_available) / 1024.0;
+    double totalMB = mem_info.mem_total / 1024.0;
+
+    double swapTotalMB = mem_info.swap_total  / 1024.0;
+    double swapUsedMB =( mem_info.swap_total - mem_info.swap_free )/ 1024.0;
+
     print_title("Memory used");
-
-    long usedMB = (mem_info.total - mem_info.available) / 1024;
-    long totalMB = mem_info.total / 1024;
-
-    printf("%ld/%ld MB\n",usedMB,totalMB);
+    printf("%.2f/%.2f MB\n",usedMB,totalMB);
+    print_title("Swap used");
+    printf("%.2f/%.2f MB\n",swapUsedMB,swapTotalMB);
 
 }
 
@@ -238,3 +233,67 @@ void print_net_info(){
 
 
 }
+
+void print_laptop_info(){
+
+    char info[256];
+    info[0] = '\0';
+    char buf[256];
+    struct stat st;
+
+    if (stat("/sys/class/dmi/id",&st)==0){
+
+        FILE* file =fopen("/sys/class/dmi/id/sys_vendor","r");
+        if(!file){
+            return;
+        }
+        int len=fread(buf,1,256,file);
+        buf[len-1] = '\0';
+        //printf("%s\n",buf);
+
+        fclose(file);
+        strcat(info,buf);
+        strcat(info," ");
+        
+        file =fopen("/sys/class/dmi/id/product_name","r");
+        if(!file){
+            return;
+        }
+        len=fread(buf,1,256,file);
+        buf[len-1] = '\0';
+        strcat(info,buf);
+
+        fclose(file);
+
+    }
+
+    if (info[0]!='\0'){
+        print_title("Laptop model");
+        printf("%s\n",info);
+    }
+
+}
+
+    void print_disk_usage(){
+
+
+
+        AllPartitionsInfo* part_info = get_partitions();
+        for(int i=0;i<part_info->count;i++){
+
+
+            print_title("Disk usage");
+            PartitionInfo part =part_info->parts[i];
+
+            double usedGB=(part.total_bytes  - part.available_bytes)/1024.0/1204.0/1024.0;
+            double totalGB=(part.total_bytes)/1024.0/1204.0/1024.0;
+
+
+            printf("%.2f/%.2fGB (mounted: %s, fs: %s)\n",usedGB,totalGB,part.mnt_dir,part.mnt_type);
+
+        }
+
+        free_allPartitionsInfo(part_info);
+
+        }
+    

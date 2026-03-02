@@ -164,7 +164,6 @@ int stdout_line_counter(char** argv){
     close(pipefd[0]);
     waitpid(pid, NULL, 0);
 
-    // add terminator 
     return lines;
 
 }

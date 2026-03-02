@@ -3,6 +3,7 @@
 #include "str_utils.h"
 #include "cmd_runner.h"
 #include <stdio.h>
+#include <stdbool.h>
 
 
 #include <ifaddrs.h>
@@ -10,6 +11,11 @@
 #include <netinet/in.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/statvfs.h>
+
+
+#include <mntent.h>
+
 
 #include "sys_info.h"
 
@@ -87,9 +93,15 @@ OsInfo* get_os_info(){
 
     return info;
 
+}
 
+void free_os_info(OsInfo *info){
+    if (!info) return;
 
-
+    free(info->id_like);
+    free(info->pretty_name);
+    free(info->id);
+    free(info);
 }
 
 
@@ -173,17 +185,28 @@ MemInfo get_mem_info(){
     char line [500];
 
     MemInfo info;
-    info.total = -1;
-    info.available = -1;
+    info.mem_total = -1;
+    info.mem_available = -1;
 
     while(fgets(line,sizeof(line),file)){
         if(has_prefix(line,"MemTotal:")){
-            info.total = mem_line_get_long(line);
+            info.mem_total = mem_line_get_long(line);
         }
-        if(has_prefix(line,"MemAvailable:")){
-            info.available =  mem_line_get_long(line);
+        else if(has_prefix(line,"MemAvailable:")){
+            info.mem_available =  mem_line_get_long(line);
+        }
+
+        else if(has_prefix(line,"SwapTotal:")){
+            info.swap_total=  mem_line_get_long(line);
+        }
+        
+        else if(has_prefix(line,"SwapFree:")){
+            info.swap_free =  mem_line_get_long(line);
         }
     }
+
+
+    fclose(file);
 
     return info;
 
@@ -266,9 +289,113 @@ NetInfo get_net_info(){
     return info;
 }
 
+bool is_fs_allowed(const char* fs){
+    char* allowed[] = {"ext2","ext3","ext4","fat16",
+        "fat32","vfat","exfat","ntfs",
+        "fuse.sshfs",
+        NULL
+    };
+    int idx = 0;
+    while(allowed[idx] !=NULL){
+        if(strcmp(allowed[idx],fs)==0){
+            return true;
 
-    
+        }
+        idx++;
+    }
+
+    return false;
+}
 
 
-    // FILE* file = fopen("/proc/meminfo","r");
+void free_partitions(PartitionInfo* partitions,int count){
+    if (partitions){
+        for(int i =0;i<count;i++){
+            free(partitions[i].mnt_fsname);
+            free(partitions[i].mnt_dir);
+            free(partitions[i].mnt_type);
+        }
+        free(partitions);
+    }
+
+}
+
+void free_allPartitionsInfo(AllPartitionsInfo* info){
+    free_partitions(info->parts,info->count);
+    free(info);
+
+}
+
+
+AllPartitionsInfo*  get_partitions(){
+
+    FILE* file = fopen("/proc/mounts","r");
+    if(!file){
+        return NULL;
+    }
+
+    int cap = 4;// just average number of mounted fs 
+    int count =0;
+    PartitionInfo* partitions  = malloc(cap * sizeof(PartitionInfo));
+    if(!partitions) {
+        fclose(file);
+        return NULL;
+    } 
+
+    struct mntent *mounted;
+
+    struct statvfs st;
+
+    while((mounted=getmntent(file))!=NULL){
+        char* fs = mounted->mnt_type;
+
+        if(is_fs_allowed(fs)){
+
+            // cap reached double size and realloc
+            if(cap == count){
+                cap *=2;
+                
+                PartitionInfo* tmp = realloc(partitions,cap * sizeof(PartitionInfo));
+                // realloc fails
+                if (!tmp){
+                    free_partitions(tmp,count);
+                    fclose(file);
+                    return NULL;
+                }
+                partitions = tmp;
+            }
+
+            // get disk space usage 
+            partitions[count].total_bytes = 0;
+            partitions[count].available_bytes = 0;
+            if(statvfs(mounted->mnt_dir,&st)==0){
+                partitions[count].total_bytes = st.f_blocks * st.f_bsize;
+                partitions[count].available_bytes = st.f_bavail * st.f_bsize;
+            }
+
+            partitions[count].mnt_fsname= strdup(mounted->mnt_fsname);
+            partitions[count].mnt_dir= strdup(mounted->mnt_dir);
+            partitions[count].mnt_type= strdup(mounted->mnt_type);
+            count++;
+        }
+    }
+
+    fclose(file);
+
+    AllPartitionsInfo *info = malloc(sizeof(AllPartitionsInfo));
+    if(!info){
+        free_partitions(partitions,count);
+        return NULL;
+
+    }
+    info->count = count;
+    info->parts = partitions;
+
+    return info;
+
+    }
+
+
+
+
 

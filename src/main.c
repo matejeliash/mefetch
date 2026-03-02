@@ -55,36 +55,30 @@ int main(int argc,char* argv[]){
 
     set_color(argc,argv);
 
+    OsInfo * os_info = get_os_info();
+
     printf("\n\n");
+
     print_user_info();
-    OsInfo * info = get_os_info();
-    print_os_pretty_name(info->pretty_name);
+    print_os_pretty_name(os_info->pretty_name);
     print_kernel();
     print_desktop_info();
     print_cpu_info();
-    print_package_count(info);
-    free(info->pretty_name);
-    free(info->id);
-    free(info->id_like);
-    free(info);
+    print_package_count(os_info);
     print_locale();
     print_shell();
     print_uptime();
     print_mem_used();
     print_net_info();
+    print_disk_usage();
+    print_laptop_info();
+
     printf("\n");
     print_colors();
+
     printf("\n\n");
 
-    // char* cmd_args[] = {"asdasd","asdasd",NULL};
-    // char* stdout = run_cmd(cmd_args);
-    // printf("%s\n",stdout);
-    // free(stdout);
-
-
-
-
-   // get_mem_info();
+    free_os_info(os_info);
 
 
 

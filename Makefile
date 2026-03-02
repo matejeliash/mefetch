@@ -23,7 +23,7 @@ CFLAGS_DEBUG = -Wall -Wextra -Werror -fsanitize=address -g $(INCLUDE)
 # optimize code 
 CFLAGS_RELEASE = -Wall -Wextra -O3 $(INCLUDE)
 # sqlite dev lib is needed
-LDFLAGS = 
+#LDFLAGS = 
 #LDFLAGS = -lsqlite3
 
 # default rule: debug build

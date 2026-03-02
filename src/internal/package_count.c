@@ -3,6 +3,8 @@
 #include "cmd_runner.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
+
 //#include <sqlite3.h>
 
 
@@ -38,7 +40,29 @@ int get_package_count_deb(){
     return count;
 }
 
-// // works for newer RedHat distros like fedora
+
+int get_package_count_deb2(){
+
+
+    FILE *file = fopen("/var/lib/dpkg/status","r");
+    if (!file){
+        return -1;
+    }
+    int count = 0;
+    char line [8024];
+
+    while(fgets(line,sizeof(line),file)){
+        if (strstr(line,"Status:")!=NULL && strstr(line,"installed")!=NULL){
+            count++;
+        }
+    }
+
+    fclose(file);
+
+    return count;
+}
+
+// // works for newer RedHat distros like fedora, this is not reliable
 // int get_package_count_fedora() {
 
 //     // sqlite db used by dnf5>
@@ -98,5 +122,30 @@ int get_package_count_arch(){
     char* cmd[] = { "pacman","-Qq",NULL};
     int count = run_cmd_line_counter(cmd);
     return count;
+
+}
+
+
+void get_package_count(OsInfo* info, char* pkg_type, int* count){
+    // printf("packages: %d\n",count);
+    if( (strcmp(info->id,"debian") == 0 )|| (strstr(info->id_like,"debian") !=NULL) ){
+        *count = get_package_count_deb2();
+        strcpy(pkg_type,"dpkg");
+    }
+    else if( (strcmp(info->id,"fedora") == 0 )|| (strstr(info->id_like,"fedora")!= NULL) ){
+        *count = get_package_count_rpm();
+        strcpy(pkg_type,"rpm");
+    }
+
+    else if( (strstr(info->id,"opensuse") != NULL )|| (strstr(info->id_like,"opensuse")!= NULL) ){
+        *count = get_package_count_rpm();
+        strcpy(pkg_type,"rpm");
+    }
+    else if( (strcmp(info->id,"arch") == 0 )|| (strstr(info->id_like,"arch")!= NULL) ){
+        *count = get_package_count_arch();
+        strcpy(pkg_type,"pacman");
+
+    }
+
 
 }

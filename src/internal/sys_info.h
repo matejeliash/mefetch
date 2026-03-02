@@ -19,8 +19,10 @@ typedef struct OsInfo{
 
 
 typedef struct MemInfo{
-    long total;
-    long available;
+    long mem_total;
+    long mem_available;
+    long swap_total;
+    long swap_free;
 }MemInfo;
 
 typedef struct NetInterface{
@@ -29,20 +31,39 @@ typedef struct NetInterface{
 
 }NetInterface;
 
+
 typedef struct NetInfo{
     NetInterface* interfaces;
     int count;
 }NetInfo;
 
+typedef struct PartitionInfo{
+    char* mnt_fsname;
+    char* mnt_dir;
+    char* mnt_type;
+    unsigned long long total_bytes;
+    unsigned long long  available_bytes;
+} PartitionInfo;
+
+typedef struct AllPartitionsInfo{
+    PartitionInfo* parts;
+    int count;
+}AllPartitionsInfo;
+
 
 OsInfo* get_os_info();
+void free_os_info(OsInfo *info);
 
 CpuInfo* get_cpu_info();
 
-
 MemInfo get_mem_info();
 
-
 NetInfo get_net_info();
+
+void free_partitions(PartitionInfo* partitions,int count);
+void free_allPartitionsInfo(AllPartitionsInfo* info);
+
+
+AllPartitionsInfo*  get_partitions();
 
 #endif

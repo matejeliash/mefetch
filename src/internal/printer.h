@@ -38,4 +38,8 @@ void print_mem_used();
 
 void print_net_info();
 
+void print_laptop_info();
+
+void print_disk_usage();
+
 #endif
