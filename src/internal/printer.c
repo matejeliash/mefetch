@@ -82,7 +82,8 @@ void print_cpu_info(){
 void print_package_count(OsInfo* info){
 
     int count = -1;
-    char pkg_type [10];
+    char pkg_type [20] = "unknown";
+
 
     get_package_count(info,pkg_type,&count);
 

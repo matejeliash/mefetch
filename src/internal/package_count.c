@@ -126,6 +126,29 @@ int get_package_count_arch(){
 }
 
 
+int get_package_count_alpine(){
+
+
+    FILE *file = fopen("/lib/apk/db/installed","r");
+    if (!file){
+        return -1;
+    }
+    int count = 0;
+    char line [8024];
+
+    while(fgets(line,sizeof(line),file)){
+        if (line[0] == 'P'){
+            count++;
+        }
+    }
+
+    fclose(file);
+
+    return count;
+}
+
+
+
 void get_package_count(OsInfo* info, char* pkg_type, int* count){
     // printf("packages: %d\n",count);
     if( (strcmp(info->id,"debian") == 0 )|| (strstr(info->id_like,"debian") !=NULL) ){
@@ -144,6 +167,11 @@ void get_package_count(OsInfo* info, char* pkg_type, int* count){
     else if( (strcmp(info->id,"arch") == 0 )|| (strstr(info->id_like,"arch")!= NULL) ){
         *count = get_package_count_arch();
         strcpy(pkg_type,"pacman");
+
+    }
+    else if( (strcmp(info->id,"alpine") == 0 )|| (strstr(info->id_like,"alpine")!= NULL) ){
+        *count = get_package_count_alpine();
+        strcpy(pkg_type,"apk");
 
     }
 

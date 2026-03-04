@@ -32,10 +32,12 @@ all: $(TARGET)
 # debug build
 $(TARGET): $(OBJS_DEBUG)
 	$(CC) $^ -o $@ $(LDFLAGS) $(CFLAGS_DEBUG)
+	
 
 build/debug/%.o: src/%.c
 	@mkdir -p $(dir $@)
 	$(CC) -c $< -o $@ $(CFLAGS_DEBUG)
+	
 
 # release build
 release: $(OBJS_RELEASE)

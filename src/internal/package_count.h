@@ -12,6 +12,8 @@ int get_package_count_arch();
 
 int  get_package_count_rpm();
 
+int  get_package_count_alpine();
+
 void print_package_info();
 
 

@@ -110,7 +110,7 @@ CpuInfo* get_cpu_info(){
 
     struct stat st;
 
-    if (stat("/bin/lscpu",&st) == -1){
+    if (stat("/usr/bin/lscpu",&st) == -1){
         return NULL;
     }
 

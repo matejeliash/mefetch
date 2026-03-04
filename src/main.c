@@ -1,16 +1,7 @@
-#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <sys/wait.h>
-#include "stdbool.h"
 
-#include <sqlite3.h>
-#include <pwd.h>
-#include "internal/cmd_runner.h"
-#include "internal/package_count.h"
-#include "internal/str_utils.h"
 #include "internal/printer.h"
 #include "internal/sys_info.h"
 
