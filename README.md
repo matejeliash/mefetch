@@ -8,6 +8,26 @@ This is a Neofetch-like terminal application written in C. I know a Neofetch-lik
 ![example](assets/example2.png)
 
 
+## How to run
+
+
+
+The application can be compiled using a Makefile. The provided Makefile uses dynamic linking and should work with both glibc and musl.
+
+To create an executable for testing and debugging, use the following command:
+```
+make debug
+```
+To create a smaller, -O3 optimized executable, use the following command:
+```
+make release
+```
+Command to run the application:
+```
+./mefetch_debug
+./mefetch_release [--no-art] [--red|blue|green|...]
+```
+
 
 
 
@@ -15,7 +35,9 @@ This is a Neofetch-like terminal application written in C. I know a Neofetch-lik
 - [x] Show kernel
 - [x] Show current IP address
 - [x] Show used memory
-- [ ] Show used disk space
+- [x] show used disk space
 - [ ] Show graphics card
+- [x] show ASCII art
   
+
 
